@@ -150,7 +150,7 @@ function HospitalsList({ hospitalData, datasize }) {
                     key="action"
                     render={(_, record) => (
                         <Space size="middle">
-                            <a onClick={() => router.push(`/hospitals/edit/${record.admin_id}`)}><EditOutlined style={{ fontSize: '18px' }} /></a>
+                            <a onClick={() => router.push(`/edit/hospitals/${record.admin_id}`)}><EditOutlined style={{ fontSize: '18px' }} /></a>
                             <a href="#"><DeleteOutlined style={{ fontSize: '18px' }} /></a>
                         </Space>
                     )}

@@ -8,12 +8,12 @@ import { useAuth } from '@/context/AuthContext';
 const AddHospital = () => {
 
     useAuthRedirect('create_hospital');
-    const { loading, token } = useAuth();
+    const { loading, token, user } = useAuth();
 
 
     return (
         <>
-            <Navbar />
+            <Navbar role={user?.data?.role} />
             <h1 className="text-3xl font-bold mt-8 mb-8 text-center text-[#008AFF]">Add New Hospital</h1>
             <HospitalForm token={token} />
         </>

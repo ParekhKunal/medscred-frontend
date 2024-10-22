@@ -81,27 +81,45 @@ const HospitalForm = ({ token }) => {
                 }
             });
 
-
-            console.log("Form data before submission:", formData);
-
             const response = await axios.post(
                 'http://localhost:5500/api/v1/hospitals/create-hospital',
                 submitData,
                 {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
                     },
                 }
             );
 
-            message.success('Hospital registered successfully');
-
-            router.replace('/hospitals')
+            if (response.status === 201) {
+                const hospitalId = response.data.data;
+                message.success('Hospital registered successfully');
+                router.replace(`/edit/hospitals/${hospitalId}`);
+            } else if (response.status === 400) {
+                message.error(response.data.error || 'Invalid input');
+            } else if (response.status === 404) {
+                message.info(response.data.message || 'Hospital already exists');
+            } else {
+                message.error('Unexpected status code');
+            }
 
         } catch (error) {
-            console.error('Error submitting form:', error);
-            message.error('Something went wrong during submission');
+            if (error.response) {
+                if (error.response.status === 400) {
+                    message.error(error.response.data.error || 'Invalid input');
+                } else if (error.response.status === 404) {
+                    message.error(error.response.data.message || 'Hospital already exists');
+                } else if (error.response.status === 500) {
+                    message.error('Internal server error');
+                } else {
+                    message.error('Something went wrong during submission');
+                }
+            } else {
+                // Log if the issue is not related to the response (network issues, etc.)
+                console.error('Error:', error.message);
+                message.error('Something went wrong during submission');
+            }
         }
     };
 
@@ -257,7 +275,6 @@ const HospitalForm = ({ token }) => {
                                     <Form.Item
                                         label="Account Holder Name"
                                         name="account_holder_name"
-                                        rules={[{ required: true, message: 'Please input Account Holder Name!' }]}
                                     >
                                         <Input name='account_holder_name' value={formData.account_holder_name}
                                             onChange={handleInputChange} placeholder="Enter Account Holder Name" />
@@ -267,7 +284,6 @@ const HospitalForm = ({ token }) => {
                                     <Form.Item
                                         label="Account Number"
                                         name="account_number"
-                                        rules={[{ required: true, message: 'Please input Account Number!' }]}
                                     >
                                         <Input name='account_number' value={formData.account_number}
                                             onChange={handleInputChange} placeholder="Enter Account Number" />
@@ -279,7 +295,6 @@ const HospitalForm = ({ token }) => {
                                     <Form.Item
                                         label="Bank Name"
                                         name="bank_name"
-                                        rules={[{ required: true, message: 'Please input Bank Name!' }]}
                                     >
                                         <Input name='bank_name' value={formData.bank_name}
                                             onChange={handleInputChange} placeholder="Enter Bank Name" />
@@ -289,7 +304,6 @@ const HospitalForm = ({ token }) => {
                                     <Form.Item
                                         label="IFSC Code"
                                         name="ifsc_code"
-                                        rules={[{ required: true, message: 'Please input IFSC Code!' }]}
                                     >
                                         <Input name='ifsc_code' value={formData.ifsc_code}
                                             onChange={handleInputChange} placeholder="Enter IFSC Code" />

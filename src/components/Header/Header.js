@@ -15,22 +15,22 @@ function Header({ name, role }) {
 
                 {/* Search and Button Section */}
                 <div className="flex items-center space-x-4">
-                    <Link href="/hospitals/add">
+                    <Link href="/add/hospitals">
                         <Button className="rounded-lg" size="medium">
                             Add Hospitals
                         </Button>
                     </Link>
-                    <Link href="/hospitals/add">
+                    <Link href="/add/hospitals">
                         <Button className="rounded-lg" size="medium">
                             Add Patients
                         </Button>
                     </Link>
-                    <Link href="/hospitals/add">
+                    <Link href="/add/hospitals">
                         <Button className="rounded-lg" size="medium">
                             Add NBFC
                         </Button>
                     </Link>
-                    <Link href="/hospitals/add">
+                    <Link href="/add/hospitals">
                         <Button className="rounded-lg" size="medium">
                             Add Users
                         </Button>

@@ -96,7 +96,7 @@ function Menubar({ role }) {
                                 <Link href='/admin' className="text-sm font-normal leading-6 text-[#008AFF]">
                                     Dashboard
                                 </Link>
-                                <Link href="/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
+                                <Link href="/view/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
                                     Hospital
                                 </Link>
                                 <a href="#" className="text-sm font-normal leading-6 text-[#008AFF]">
@@ -118,7 +118,7 @@ function Menubar({ role }) {
                                 <Link href='/sales' className="text-sm font-normal leading-6 text-[#008AFF]">
                                     Dashboard
                                 </Link>
-                                <Link href="/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
+                                <Link href="/view/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
                                     Hospital
                                 </Link>
                                 <a href="#" className="text-sm font-normal leading-6 text-[#008AFF]">
@@ -212,7 +212,7 @@ function Menubar({ role }) {
                                             <Link href='/admin' className="text-sm font-normal leading-6 text-[#008AFF]">
                                                 Dashboard
                                             </Link>
-                                            <Link href="/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
+                                            <Link href="/view/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
                                                 Hospital
                                             </Link>
                                             <a href="#" className="text-sm font-normal leading-6 text-[#008AFF]">
@@ -234,7 +234,7 @@ function Menubar({ role }) {
                                             <Link href='/sales' className="text-sm font-normal leading-6 text-[#008AFF]">
                                                 Dashboard
                                             </Link>
-                                            <Link href="/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
+                                            <Link href="/view/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
                                                 Hospital
                                             </Link>
                                             <a href="#" className="text-sm font-normal leading-6 text-[#008AFF]">

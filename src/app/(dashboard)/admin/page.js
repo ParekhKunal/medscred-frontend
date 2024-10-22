@@ -6,7 +6,6 @@ import { useAuth } from '../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header/Header';
 import Cards from '@/components/Cards/Cards';
-import Timer from '@/components/Timer/timer';
 import HospitalsList from '@/components/DataGrid/HospitalsList';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
 import { Row, Col, Card, Statistic, Calendar, Tooltip, Badge, Popover, List, Flex, Spin } from 'antd';

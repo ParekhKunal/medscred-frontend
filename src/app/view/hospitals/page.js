@@ -17,7 +17,7 @@ function Hospitals() {
     useAuthRedirect('view_hospital');
 
     const router = useRouter();
-    const { loading, token } = useAuth();
+    const { loading, token, user } = useAuth();
     const [hospitalData, setHospitalData] = useState([]);
 
     useEffect(() => {
@@ -53,10 +53,10 @@ function Hospitals() {
 
     return (
         <div>
-            <Navbar />
+            <Navbar role={user?.data?.role} />
             <div className="w-100 items-center justify-around mt-8 mb-8 ml-24">
                 <h1 className="text-3xl font-bold mb-4" >Hospitals List</h1>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push('/hospitals/add')}>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push('/add/hospitals')}>
                     Add Hospital
                 </Button>
             </div>
