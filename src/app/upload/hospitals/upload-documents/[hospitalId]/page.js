@@ -31,6 +31,9 @@ function UploadDocuments({ params }) {
         hospital_registration_certificate: null,
         hospital_pan_card: null,
         cancelled_cheque: null,
+        gst_certificate: null,
+        certificate_of_incorporation: null,
+        rohini_certificate: null,
     });
 
 
@@ -122,7 +125,7 @@ function UploadDocuments({ params }) {
 
             message.success('Thanks For Submitting the Data');
 
-            router.replace('/thanks')
+            router.replace('/view/thanks')
 
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -280,7 +283,7 @@ function UploadDocuments({ params }) {
 
                     <Space direction="vertical" size="large" style={{ width: '100%' }}>
                         <Row gutter={16}>
-                            <Col span={8}>
+                            {!hospitalData.hospital_registration_certificate && <Col span={8}>
                                 <h1><span style={{ color: 'red' }}>*</span>Hospital Registration Certificate*</h1>
                                 <FormItem rules={[{ required: true, message: 'Please Upload The File' }]}>
                                     <Dragger {...uploadProps('hospital_registration_certificate')} style={{ width: '100%', height: '80px', padding: '20px' }}>
@@ -292,32 +295,35 @@ function UploadDocuments({ params }) {
                                     </Dragger>
                                 </FormItem>
                             </Col>
-
-                            <Col span={8}>
-                                <h1><span style={{ color: 'red' }}>*</span>Upload PAN Card*</h1>
-                                <FormItem rules={[{ required: true, message: 'Please Upload The File' }]}>
-                                    <Dragger {...uploadProps('hospital_pan_card')} style={{ width: '100%', height: '80px', padding: '20px' }}>
-                                        <p className="ant-upload-drag-icon">
-                                            <InboxOutlined />
-                                        </p>
-                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                                        <p className="ant-upload-hint">Please upload the PAN Card</p>
-                                    </Dragger>
-                                </FormItem>
-                            </Col>
-
-                            <Col span={8}>
-                                <h1><span style={{ color: 'red' }}>*</span>Upload Cancelled Cheque*</h1>
-                                <FormItem rules={[{ required: true, message: 'Please Upload The File' }]}>
-                                    <Dragger {...uploadProps('cancelled_cheque')} style={{ width: '100%', height: '80px', padding: '20px' }}>
-                                        <p className="ant-upload-drag-icon">
-                                            <InboxOutlined />
-                                        </p>
-                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                                        <p className="ant-upload-hint">Please upload a Cancelled Cheque</p>
-                                    </Dragger>
-                                </FormItem>
-                            </Col>
+                            }
+                            {!hospitalData.hospital_pan_card &&
+                                <Col>
+                                    <h1><span style={{ color: 'red' }}>*</span>Upload PAN Card*</h1>
+                                    <FormItem rules={[{ required: true, message: 'Please Upload The File' }]}>
+                                        <Dragger {...uploadProps('hospital_pan_card')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                            <p className="ant-upload-drag-icon">
+                                                <InboxOutlined />
+                                            </p>
+                                            <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                            <p className="ant-upload-hint">Please upload the PAN Card</p>
+                                        </Dragger>
+                                    </FormItem>
+                                </Col>
+                            }
+                            {!hospitalData.cancelled_cheque &&
+                                <Col span={8}>
+                                    <h1><span style={{ color: 'red' }}>*</span>Upload Cancelled Cheque*</h1>
+                                    <FormItem rules={[{ required: true, message: 'Please Upload The File' }]}>
+                                        <Dragger {...uploadProps('cancelled_cheque')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                            <p className="ant-upload-drag-icon">
+                                                <InboxOutlined />
+                                            </p>
+                                            <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                            <p className="ant-upload-hint">Please upload a Cancelled Cheque</p>
+                                        </Dragger>
+                                    </FormItem>
+                                </Col>
+                            }
                         </Row>
                         <Row gutter={16}>
                             <Col span={8}>

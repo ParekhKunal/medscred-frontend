@@ -18,12 +18,14 @@ const statusTransitions = {
     9: []
 };
 
-function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate }) {
+function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospitalEmail }) {
     const [open, setOpen] = useState(false);
     const [form] = Form.useForm();
     const [summary, setSummary] = useState('');
+    const [password, setPassword] = useState('');
     const [hospitalStatusList, setHospitalStatusList] = useState([]);
     const [summaryLength, setSummaryLength] = useState(0);
+    const [selectedStatus, setSelectedStatus] = useState(null);
 
     const showDrawer = () => {
         setOpen(true);
@@ -41,17 +43,19 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate }) {
             // Prepare data for submission
             const response = await axios.post(`http://localhost:5500/api/v1/hospitals/update-hospital-status/${hospitalId}`, {
                 status: values.status,
+                password: password,
                 summary: summary,
             }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
+            console.log(response);
 
             if (response.data && response.data.status === 'OK') {
                 notification.success({
                     message: 'Status Updated',
-                    description: `Status updated successfully for ${values.status}.`,
+                    description: `${response.data.message} ${values.status}.`,
                 });
                 onStatusUpdate();
                 onClose();
@@ -78,7 +82,6 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate }) {
                         'Authorization': `Bearer ${token}`,
                     },
                 });
-                console.log(response.data.data);
 
                 if (response.data && response.data.status === 'OK') {
                     const validStatuses = statusTransitions[currentStatus] || [];
@@ -100,7 +103,7 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate }) {
         };
 
         fetchHospitalList();
-    }, [currentStatus]);
+    }, [token, currentStatus]);
 
     const handleSummaryChange = (e) => {
         const value = e.target.value;
@@ -108,6 +111,19 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate }) {
             setSummary(value);
             setSummaryLength(value.length);
         }
+    };
+
+    const handlePassword = (e) => {
+        const value = e.target.value;
+        console.log(value);
+
+        if (value.length <= 250) {
+            setPassword(value);
+        }
+    };
+
+    const handleStatusChange = (value) => {
+        setSelectedStatus(value);
     };
 
     return (
@@ -153,7 +169,7 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate }) {
                                     },
                                 ]}
                             >
-                                <Select placeholder="Please select the Status">
+                                <Select placeholder="Please select the Status" onChange={handleStatusChange}>
                                     {
                                         hospitalStatusList.map(status => (
                                             <Option key={status.id} value={status.id}>
@@ -162,6 +178,25 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate }) {
                                         ))}
                                 </Select>
                             </Form.Item>
+                            {selectedStatus === 5 && (
+                                <Row gutter={16}>
+                                    <Col span={12}>
+
+                                        <Form.Item
+                                            label="Hospital Email"
+                                            name="hospitalEmail"
+                                            initialValue={hospitalEmail}
+                                        >
+                                            <Input type="email" name='email' placeholder="Enter Hospital Email" disabled />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Form.Item label="Password" name="password">
+                                            <Input.Password value={password} placeholder="Enter your password" onChange={handlePassword} />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+                            )}
                         </Col>
                     </Row>
                     <Row gutter={16}>

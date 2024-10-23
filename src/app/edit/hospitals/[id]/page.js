@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar/Navbar';
 import { useAuth } from '@/context/AuthContext';
 import { useParams } from 'next/navigation';
-import { Avatar, Button, Timeline, Tag, Upload, Input, Collapse, Panel, List, Modal, Tabs, Divider, Card, Select, Steps, Row, Col, Flex, Spin, Form, notification, Dropdown, Menu } from 'antd';
+import { Avatar, Button, Timeline, Tag, Upload, Input, Collapse, Panel, List, Modal, Tabs, Divider, Card, Select, Steps, Row, Col, Flex, Spin, Form, notification, Dropdown, Menu, message } from 'antd';
 import { MailOutlined, UploadOutlined, FileOutlined, CheckCircleOutlined, UserOutlined, CloudOutlined, PlusOutlined, InboxOutlined, InfoCircleOutlined, FileTextOutlined, LoadingOutlined, DownOutlined } from '@ant-design/icons';
 import Image from 'next/image';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
@@ -26,9 +26,10 @@ const { Step } = Steps;
 
 const { TabPane } = Tabs;
 
-function EditHospital() {
+function EditHospital({ params }) {
 
     useAuthRedirect('update_hospital');
+
 
     const { id } = useParams();
     const { loading, token, user } = useAuth();
@@ -36,23 +37,37 @@ function EditHospital() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [formData, setFormData] = useState({
-        permission_name: 'create_hospital',
+        permission_name: 'update_hospital',
         account_type: [],
         first_name: '',
         email: '',
         phone_number: '',
+        alternate_email: '',
+        alternate_phone_number: '',
         address_line_1: '',
         address_line_2: '',
         city: '',
         state: '',
-        pin_code: '',
+        pincode: '',
         account_holder_name: '',
         account_number: '',
         bank_name: '',
         ifsc_code: '',
+        reimburse_commission: '',
+        cashless_commission: '',
+        asthetic_commission: '',
         hospital_registration_certificate: null,
         hospital_pan_card: null,
         cancelled_cheque: null,
+        gst_certificate: null,
+        certificate_of_incorporation: null,
+        rohini_certificate: null,
+        hospital_registration_certificate_url: null,
+        hospital_pan_card_url: null,
+        cancelled_cheque_url: null,
+        gst_certificate_url: null,
+        certificate_of_incorporation_url: null,
+        rohini_certificate_url: null,
     });
 
     const [hospitalData, setHospitalData] = useState(null);
@@ -128,7 +143,7 @@ function EditHospital() {
     const handleSelectChange = (value) => {
         setFormData((prevFormData) => ({
             ...prevFormData,
-            account_type: value,
+            account_type: value.join(',')
         }));
     };
 
@@ -186,37 +201,73 @@ function EditHospital() {
                 setHospitalData(data);
                 setFormData((prevFormData) => ({
                     ...prevFormData,
-                    account_type: data.account_type.split(','),
+                    account_type: data?.account_type?.split(','),
                     first_name: data.first_name,
                     email: data.email,
                     phone_number: data.phone_number,
+                    alternate_email: data?.alternate_email,
+                    alternate_phone_number: data?.alternate_phone_number,
                     address_line_1: data.address_line_1,
                     address_line_2: data.address_line_2,
                     city: data.city,
                     state: data.state,
-                    pin_code: data.pin_code,
-                    account_holder_name: data.account_holder_name,
-                    account_number: data.account_number,
-                    bank_name: data.bank_name,
-                    ifsc_code: data.ifsc_code,
+                    pincode: data.pincode,
+                    account_holder_name: data?.account_holder_name,
+                    account_number: data?.account_number,
+                    reimburse_commission: data?.reimburse_commission,
+                    cashless_commission: data.cashless_commission,
+                    asthetic_commission: data.asthetic_commission,
+                    bank_name: data?.bank_name,
+                    ifsc_code: data?.ifsc_code,
                     cancelled_cheque: data.cancelled_cheque ? [{
                         uid: '-1',
                         name: 'Cancelled Cheque',
                         status: 'done',
                         url: data.cancelled_cheque
                     }] : [],
+                    cancelled_cheque_url: data.cancelled_cheque || null,
                     hospital_registration_certificate: data.hospital_registration_certificate ? [{
                         uid: '-2',
                         name: 'Hospital Registration Certificate',
                         status: 'done',
                         url: data.hospital_registration_certificate
                     }] : [],
+                    hospital_registration_certificate_url: data.hospital_registration_certificate || null,
                     hospital_pan_card: data.hospital_pan_card ? [{
                         uid: '-3',
                         name: 'PAN Card',
                         status: 'done',
                         url: data.hospital_pan_card
                     }] : [],
+                    hospital_pan_card_url: data.hospital_pan_card || null,
+                    gst_certificate: data.gst_certificate ? [{
+                        uid: '-4',
+                        name: 'Gst Cetificate',
+                        status: 'done',
+                        url: data.gst_certificate
+                    }] : [],
+                    gst_certificate_url: data.gst_certificate || null,
+                    certificate_of_incorporation: data.certificate_of_incorporation ? [{
+                        uid: '-5',
+                        name: 'Certificate Of Incorporation',
+                        status: 'done',
+                        url: data.certificate_of_incorporation
+                    }] : [],
+                    certificate_of_incorporation_url: data.certificate_of_incorporation || null,
+                    rohini_certificate: data.rohini_certificate ? [{
+                        uid: '-6',
+                        name: 'Rohini Certificate',
+                        status: 'done',
+                        url: data.rohini_certificate
+                    }] : [],
+                    rohini_certificate_url: data.rohini_certificate || null,
+                    mou: data.mou ? [{
+                        uid: '-7',
+                        name: 'MOU',
+                        status: 'done',
+                        url: data.mou
+                    }] : [],
+                    mou_url: data.mou || null,
                 }));
             } else {
                 notification.error({
@@ -234,6 +285,51 @@ function EditHospital() {
     useEffect(() => {
         fetchHospitalDetails();
     }, [token, id]);
+
+
+    const onSubmit = async () => {
+        try {
+            // Prepare data for submission
+            const submitData = new FormData();
+            Object.entries(formData).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    if (value.length > 0 && value[0].originFileObj) {
+                        value.forEach((file) => {
+                            submitData.append(key, file.originFileObj);
+                        });
+                    } else {
+                        const existingUrlKey = `${key}_url`;
+                        if (formData[existingUrlKey]) {
+                            submitData.append(key, formData[existingUrlKey]);
+                        }
+                    }
+                } else {
+                    submitData.append(key, value);
+                }
+            });
+
+
+            console.log("Form data before submission:", formData);
+
+            const response = await axios.post(
+                `http://localhost:5500/api/v1/hospitals/update-hospital/${id}`,
+                submitData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+
+            message.success('Hospital Data Updated Successfully');
+
+
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            message.error('Something went wrong during submission');
+        }
+    };
 
     const handleStatusUpdate = () => {
         fetchHospitalDetails();
@@ -255,7 +351,7 @@ function EditHospital() {
                 <Card className="mb-8">
                     <div className="p-6 bg-gray-50">
                         {
-                            hospitalData?.status == 4 && <div className="flex justify-between items-center bg-green-100 text-white-300 p-4 mb-6 rounded-md">
+                            hospitalData?.status == 2 && <div className="flex justify-between items-center bg-green-100 text-white-300 p-4 mb-6 rounded-md">
                                 <span className="flex items-center">
                                     <InfoCircleOutlined className="mr-2" />
                                     {hospitalData.document_upload_link}
@@ -276,7 +372,7 @@ function EditHospital() {
                             onCancel={handleCancel}
                         >
                             {qrCodeUrl && (
-                                <Image src={qrCodeUrl} alt="QR Code" style={{ width: '100%', height: 'auto' }} />
+                                <Image width={60} height={60} src={qrCodeUrl} alt="QR Code" style={{ width: '60%', height: 'auto', display: 'flex', justifyContent: 'center', marginLeft: 'auto', marginRight: 'auto' }} />
                             )}
                         </Modal>
 
@@ -292,7 +388,7 @@ function EditHospital() {
                                     </div>
                                     <div>
                                         <strong>Hospital Type:</strong> <br />
-                                        {hospitalData.account_type.split(',').map((type) => {
+                                        {hospitalData?.account_type?.split(',').map((type) => {
                                             let color;
                                             switch (type.toLowerCase()) {
                                                 case 'reimbursement':
@@ -330,12 +426,22 @@ function EditHospital() {
                                     <div className="md:col-span-2">
                                         <strong>Address:</strong> <br />
                                         <span style={{ fontSize: '12px' }}>
-                                            {hospitalData?.address_line_1}, {hospitalData?.address_line_2}, {hospitalData?.city}, {hospitalData?.state}, India  {hospitalData.pin_code}
+                                            {hospitalData?.address_line_1}, {hospitalData?.address_line_2}, {hospitalData?.city}, {hospitalData?.state}, India  {hospitalData.pincode}
                                         </span>
                                     </div>
                                 </div>
                                 <div className="md:col-span-2 mt-4 w-full">
-                                    <StatusUpdate token={token} currentStatus={hospitalData.status} hospitalId={hospitalData.id} onStatusUpdate={handleStatusUpdate} />
+                                    {hospitalData.status + 1 === 5 && (!hospitalData.reimburse_commission || !hospitalData.cashless_commission) ? (
+                                        <div className="text-red-500 font-bold" style={{ fontSize: 12 }}>Next Status is MOU Send before that Please Insert Reimburse, Cashless and Asthetic Commission first.</div>
+                                    ) : (
+                                        <StatusUpdate
+                                            token={token}
+                                            currentStatus={hospitalData.status}
+                                            hospitalId={hospitalData.id}
+                                            onStatusUpdate={handleStatusUpdate}
+                                            hospitalEmail={hospitalData.email}
+                                        />
+                                    )}
                                 </div>
                             </Card>
 
@@ -359,7 +465,7 @@ function EditHospital() {
                                         {hospitalData.ifsc_code ? hospitalData.ifsc_code : 'No Data Available'}
                                     </div>
                                     <div className="md:col-span-2 flex justify-end">
-                                        <Button href={hospitalData.cancelled_cheque} icon={<FileTextOutlined />} target='_blank' rel="noopener noreferrer">View Cancelled Cheque</Button>
+                                        {hospitalData.cancelled_cheque && <Button href={hospitalData.cancelled_cheque} icon={<FileTextOutlined />} target='_blank' rel="noopener noreferrer">View Cancelled Cheque</Button>}
                                     </div>
                                 </div>
                             </Card>
@@ -380,7 +486,7 @@ function EditHospital() {
                                         {hospitalData.asthetic_commission ? hospitalData.asthetic_commission : 'No Data Available'}
                                     </div>
                                     <div className="md:col-span-2 flex justify-end">
-                                        <Button href="#" icon={<FileTextOutlined />} target='_blank' rel="noopener noreferrer">View MOU</Button>
+                                        {hospitalData.mou && <Button href={hospitalData.mou} icon={<FileTextOutlined />} target='_blank' rel="noopener noreferrer">View MOU</Button>}
                                     </div>
                                 </div>
                             </Card>
@@ -408,7 +514,7 @@ function EditHospital() {
                     </div>
                 </Card>
 
-                <Form layout="vertical">
+                <Form layout="vertical" onFinish={onSubmit}>
                     <Card title="Hospital Basic Details" className='w-full mb-4'>
                         <Row gutter={16} className='mt-2'>
                             <Col span={12}>
@@ -418,7 +524,7 @@ function EditHospital() {
                                     initialValue={formData.account_type}
                                     rules={[{ required: true, message: 'Please select account type!' }]}
                                 >
-                                    <Select name="account_type" mode="multiple" placeholder="Select account types" onChange={handleSelectChange} value={formData.account_type}>
+                                    <Select disabled name="account_type" mode="multiple" placeholder="Select account types" onChange={handleSelectChange} value={formData.account_type}>
                                         <Option value="Reimbursement">Reimbursement</Option>
                                         <Option value="Cashless">Cashless</Option>
                                         <Option value="Aesthetic">Aesthetic</Option>
@@ -432,7 +538,7 @@ function EditHospital() {
                                     initialValue={formData.first_name}
                                     rules={[{ required: true, message: 'Please input Hospital Name' }]}
                                 >
-                                    <Input name='first_name' value={formData.first_name} onChange={handleInputChange} placeholder="Enter Hospital Name" />
+                                    <Input disabled name='first_name' value={formData.first_name} onChange={handleInputChange} placeholder="Enter Hospital Name" />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -444,7 +550,7 @@ function EditHospital() {
                                     initialValue={formData.phone_number}
                                     rules={[{ required: true, message: 'Please input valid Phone Number', min: 10, max: 12 }]}
                                 >
-                                    <Input type="number" name="phone_number" minLength={10} maxLength={12} placeholder="Enter Hospital Phone Number" value={formData.phone_number} onChange={handleInputChange} />
+                                    <Input disabled type="number" name="phone_number" minLength={10} maxLength={12} placeholder="Enter Hospital Phone Number" value={formData.phone_number} onChange={handleInputChange} />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
@@ -455,6 +561,28 @@ function EditHospital() {
                                     rules={[{ required: true, type: 'email', message: 'Please input valid Email' }]}
                                 >
                                     <Input type="email" name='email' placeholder="Enter Hospital Email" value={formData.email} onChange={handleInputChange} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={16} className='mt-2'>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Hospital Alternate Phone Number"
+                                    name="hospitalAlternatePhoneNumber"
+                                    initialValue={formData.alternate_phone_number}
+                                    rules={[{ required: false, message: 'Please input valid Phone Number', min: 10, max: 12 }]}
+                                >
+                                    <Input type="number" name="alternate_phone_number" minLength={10} maxLength={12} placeholder="Enter Hospital Phone Number" value={formData.alternate_phone_number} onChange={handleInputChange} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    label="Hospital Alternate Email"
+                                    name="hospitalAlternateEmail"
+                                    initialValue={formData.alternate_email}
+                                    rules={[{ required: false, type: 'email', message: 'Please input valid Email' }]}
+                                >
+                                    <Input type="alternate_email" name='alternate_email' placeholder="Enter Hospital Email" value={formData.alternate_email} onChange={handleInputChange} />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -507,11 +635,11 @@ function EditHospital() {
                             <Col span={8}>
                                 <Form.Item
                                     label="Pin Code"
-                                    name="pin_code"
-                                    initialValue={formData.pin_code}
+                                    name="pincode"
+                                    initialValue={formData.pincode}
                                     rules={[{ required: true, message: 'Please input Pin Code!' }]}
                                 >
-                                    <Input name='pin_code' value={formData.pin_code} onChange={handleInputChange} placeholder="Enter Pin Code" />
+                                    <Input name='pincode' value={formData.pincode} onChange={handleInputChange} placeholder="Enter Pin Code" />
                                 </Form.Item>
                             </Col>
                             <Col span={8}>
@@ -544,8 +672,9 @@ function EditHospital() {
                                     label="Account Number"
                                     name="account_number"
                                     initialValue={formData.account_number}
+                                    rules={[{ required: true, message: 'Please input Account Holder Name!', min: 8, max: 20 }]}
                                 >
-                                    <Input placeholder="Enter Account Number" name='account_number' value={formData.account_number} onChange={handleInputChange} />
+                                    <Input type='number' placeholder="Enter Account Number" name='account_number' value={formData.account_number} onChange={handleInputChange} />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -579,31 +708,36 @@ function EditHospital() {
                         <Row gutter={16} className='mt-2'>
                             <Col span={12}>
                                 <Form.Item
-                                    label="*Reimbursement Commission"
+                                    label="Reimbursement Commission"
                                     name="reimburse_commission"
                                     initialValue={formData.reimburse_commission}
+                                    rules={[{ required: true, message: 'Please input Reimbursement Commissionin % Max:100% & Min 0%!', max: 3 }]}
                                 >
-                                    <Input placeholder="Enter Reimbursement Commission" name='reimburse_commission' value={formData.reimburse_commission} onChange={handleInputChange} />
+                                    <Input type='number' placeholder="Enter Reimbursement Commission" name='reimburse_commission' value={formData.reimburse_commission} onChange={handleInputChange} />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
                                 <Form.Item
-                                    label="*Cashless Commission"
+                                    label="Cashless Commission"
                                     name="cashless_commission"
                                     initialValue={formData.cashless_commission}
+                                    rules={[{
+                                        required: true, message: 'Please input Cashless Commission in % Max:100% & Min 0%!', max: 3
+                                    }]}
                                 >
-                                    <Input placeholder="Enter Cashless Commission" name='cashless_commission' value={formData.cashless_commission} onChange={handleInputChange} />
+                                    <Input type='number' placeholder="Enter Cashless Commission" name='cashless_commission' value={formData.cashless_commission} onChange={handleInputChange} />
                                 </Form.Item>
                             </Col>
                         </Row>
                         <Row gutter={16} className='mt-2'>
                             <Col span={12}>
                                 <Form.Item
-                                    label="*Asthetic Commission"
+                                    label="Asthetic Commission"
                                     name="asthetic_commission"
                                     initialValue={formData.asthetic_commission}
+                                    rules={[{ required: true, message: 'Please input Asthetic Commission in % Max:100% & Min 0%!', max: 3 }]}
                                 >
-                                    <Input name='asthetic_commission' value={formData.asthetic_commission} onChange={handleInputChange} placeholder="Enter Asthetic Commission" />
+                                    <Input type='number' name='asthetic_commission' value={formData.asthetic_commission} onChange={handleInputChange} placeholder="Enter Asthetic Commission" />
                                 </Form.Item>
                             </Col>
 
@@ -694,7 +828,7 @@ function EditHospital() {
                         </Row>
                     </Card>
                     <div className="text-right">
-                        <Button type="primary" size="large">
+                        <Button type="primary" htmlType='submit' size="large">
                             Save Changes
                         </Button>
                     </div>
