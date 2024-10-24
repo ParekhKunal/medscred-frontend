@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { PlusOutlined, UserAddOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Button, Col, Drawer, Form, Input, Row, Select, Space, notification, Typography } from 'antd';
+import { PlusOutlined, UserAddOutlined, InfoCircleOutlined, InboxOutlined } from '@ant-design/icons';
+import { Button, Col, Drawer, Form, Input, Row, Select, Space, notification, Typography, Upload } from 'antd';
 import axios from 'axios';
 
 const { Option } = Select;
+const { Dragger } = Upload;
 const { Title } = Typography;
+const { Item: FormItem } = Form;
 
 const statusTransitions = {
     1: [2],
@@ -26,6 +28,10 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
     const [hospitalStatusList, setHospitalStatusList] = useState([]);
     const [summaryLength, setSummaryLength] = useState(0);
     const [selectedStatus, setSelectedStatus] = useState(null);
+    const [formData, setFormData] = useState({
+
+        mou: null
+    })
 
     const showDrawer = () => {
         setOpen(true);
@@ -38,19 +44,64 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
         setSummaryLength(0);
     };
 
+    const uploadProps = (name) => ({
+        name,
+        multiple: true,
+        fileList: formData[name] || [], // Use the name parameter to access the correct file list
+        onChange: handleFileChange(name), // Pass the name for handling changes
+        onRemove: handleFileRemove(name),
+        showUploadList: true, // Show the list of uploaded files
+        beforeUpload: (file) => false,
+    });
+
+
+    const handleFileChange = (fileType) => (info) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [fileType]: info.fileList,
+        }));
+    };
+
+    const handleFileRemove = (fileType) => (file) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [fileType]: prevFormData[fileType].filter(item => item.uid !== file.uid),
+        }));
+    };
+
     const handleSubmit = async (values) => {
         try {
+
+            const submitData = new FormData();
+            Object.entries(formData).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    value.forEach((file) => {
+                        submitData.append(key, file.originFileObj);
+                    });
+                } else {
+                    submitData.append(key, value);
+                }
+            });
+
+            submitData.append('permission_name', 'update_hospital');
+            submitData.append('status', values.status);
+            submitData.append('password', password);
+            submitData.append('summary', summary);
+            submitData.append('email', hospitalEmail);
+
+            console.log("Form data before submission:", Array.from(submitData.entries()));
+
+            console.log("Submit Data", submitData);
+
             // Prepare data for submission
-            const response = await axios.post(`http://localhost:5500/api/v1/hospitals/update-hospital-status/${hospitalId}`, {
-                status: values.status,
-                password: password,
-                summary: summary,
-            }, {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/update-hospital-status/${hospitalId}`,
+                submitData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data', // Ensure multipart/form-data header is set
                 },
-            });
-            console.log(response);
+            }
+            );
 
             if (response.data && response.data.status === 'OK') {
                 notification.success({
@@ -77,7 +128,7 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
     useEffect(() => {
         const fetchHospitalList = async () => {
             try {
-                const response = await axios.get('http://localhost:5500/api/v1/hospitals/get-hospital-status-list', {
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/get-hospital-status-list`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
@@ -105,6 +156,8 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
         fetchHospitalList();
     }, [token, currentStatus]);
 
+
+
     const handleSummaryChange = (e) => {
         const value = e.target.value;
         if (value.length <= 250) {
@@ -126,14 +179,17 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
         setSelectedStatus(value);
     };
 
+
+
     return (
         <>
-            <Button className="w-full" onClick={showDrawer} icon={<PlusOutlined />} type="primary">
+            <Button className="w-full " onClick={showDrawer} icon={<PlusOutlined />} type="primary">
                 Update Status
             </Button>
             <Drawer
                 title={<Title level={3}>Update Status</Title>}
                 width={600}
+                height={500}
                 placement="bottom"
                 onClose={onClose}
                 open={open}
@@ -178,7 +234,7 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
                                         ))}
                                 </Select>
                             </Form.Item>
-                            {selectedStatus === 5 && (
+                            {selectedStatus === 8 && (
                                 <Row gutter={16}>
                                     <Col span={12}>
 
@@ -197,6 +253,34 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
                                     </Col>
                                 </Row>
                             )}
+                            {
+                                selectedStatus === 6 && (
+                                    <Row gutter={16}>
+                                        <Col span={24}>
+
+                                            <Form.Item
+                                                label="Hospital Email"
+                                                name="hospitalEmail"
+                                                initialValue={hospitalEmail}
+                                            >
+                                                <Input type="email" name='email' placeholder="Enter Hospital Email" disabled />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={24}>
+                                            <h1><span style={{ color: 'red' }}>*</span>MOU</h1>
+                                            <Form.Item rules={[{ required: true, message: 'Please Upload The File' }]}>
+                                                <Dragger {...uploadProps('mou')} style={{ width: '100%', height: '40px', padding: '20px' }}>
+                                                    <p className="ant-upload-drag-icon">
+                                                        <InboxOutlined />
+                                                    </p>
+                                                    <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                                    <p className="ant-upload-hint">Please upload MOU</p>
+                                                </Dragger>
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
+                                )
+                            }
                         </Col>
                     </Row>
                     <Row gutter={16}>

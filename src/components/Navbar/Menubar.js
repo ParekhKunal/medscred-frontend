@@ -69,16 +69,79 @@ function Menubar({ role }) {
             <header className="bg-white shadow-sm">
                 <nav aria-label="Global" className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
                     <div className="flex lg:flex-1">
-                        <Link href="#" className="-m-1.5 p-1.5">
-                            <span className="sr-only">MedsCred</span>
-                            <Image
-                                alt=""
-                                src="/assets/images/logo.png"
-                                height={50}
-                                width={130}
-                                className=""
-                            />
-                        </Link>
+                        {role === 1 &&
+                            <Link href="/admin" className="-m-1.5 p-1.5">
+                                <span className="sr-only">MedsCred</span>
+                                <Image
+                                    alt=""
+                                    src="/assets/images/logo.png"
+                                    height={50}
+                                    width={130}
+                                    className=""
+                                />
+                            </Link>
+                        }
+                        {role === 2 &&
+                            <Link href="/sales" className="-m-1.5 p-1.5">
+                                <span className="sr-only">MedsCred</span>
+                                <Image
+                                    alt=""
+                                    src="/assets/images/logo.png"
+                                    height={50}
+                                    width={130}
+                                    className=""
+                                />
+                            </Link>
+                        }
+                        {role === 3 &&
+                            <Link href="/tpa" className="-m-1.5 p-1.5">
+                                <span className="sr-only">MedsCred</span>
+                                <Image
+                                    alt=""
+                                    src="/assets/images/logo.png"
+                                    height={50}
+                                    width={130}
+                                    className=""
+                                />
+                            </Link>
+                        }
+                        {role === 4 &&
+                            <Link href="/partner" className="-m-1.5 p-1.5">
+                                <span className="sr-only">MedsCred</span>
+                                <Image
+                                    alt=""
+                                    src="/assets/images/logo.png"
+                                    height={50}
+                                    width={130}
+                                    className=""
+                                />
+                            </Link>
+                        }
+                        {role === 5 &&
+                            <Link href="/bfc" className="-m-1.5 p-1.5">
+                                <span className="sr-only">MedsCred</span>
+                                <Image
+                                    alt=""
+                                    src="/assets/images/logo.png"
+                                    height={50}
+                                    width={130}
+                                    className=""
+                                />
+                            </Link>
+                        }
+                        {role === 6 &&
+                            <Link href="/hr" className="-m-1.5 p-1.5">
+                                <span className="sr-only">MedsCred</span>
+                                <Image
+                                    alt=""
+                                    src="/assets/images/logo.png"
+                                    height={50}
+                                    width={130}
+                                    className=""
+                                />
+                            </Link>
+                        }
+
                     </div>
                     <div className="flex lg:hidden">
                         <button
@@ -153,6 +216,19 @@ function Menubar({ role }) {
                                 </Link>
                                 <a href="#" className="text-sm font-normal leading-6 text-[#008AFF]">
                                     Patients
+                                </a>
+                            </>
+                        )}
+                        {role === 6 && (
+                            <>
+                                <Link href='/hr' className="text-sm font-normal leading-6 text-[#008AFF]">
+                                    Dashboard
+                                </Link>
+                                <Link href="/view/hospitals" className="text-sm font-normal leading-6 text-[#008AFF]">
+                                    Hospital
+                                </Link>
+                                <a href="#" className="text-sm font-normal leading-6 text-[#008AFF]">
+                                    User
                                 </a>
                             </>
                         )}

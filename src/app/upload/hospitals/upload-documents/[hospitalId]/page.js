@@ -41,7 +41,7 @@ function UploadDocuments({ params }) {
     useEffect(() => {
         const fetchHospitalData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5500/api/v1/hospitals/get-hospital-by-unicode/${hospitalId}`);
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/get-hospital-by-unicode/${hospitalId}`);
                 if (response.data && response.data.status === 'OK') {
                     setHospitalData(response.data.data[0]); // Access first element
                 } else {
@@ -114,7 +114,7 @@ function UploadDocuments({ params }) {
             console.log("Form data before submission:", formData);
 
             const response = await axios.post(
-                `http://localhost:5500/api/v1/hospitals/update-hospital-by-unicode/${hospitalId}`,
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/update-hospital-by-unicode/${hospitalId}`,
                 submitData,
                 {
                     headers: {

@@ -33,14 +33,14 @@ function Thanks() {
                 </div>
 
                 {/* Illustration */}
-                <div className="mt-8 flex justify-center">
+                {/* <div className="mt-8 flex justify-center">
                     <Image
                         width={265} height={140}
                         src="/public/assets/images/login-screen.png"
                         alt="Walking up stairs"
                         className="w-265 h-265"
                     />
-                </div>
+                </div> */}
             </div>
         </div>
     )

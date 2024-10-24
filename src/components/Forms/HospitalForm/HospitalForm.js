@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, notification, Space, DatePicker, Select, Upload, message, Steps, Row, Col } from 'antd';
+import { Form, Input, Button, notification, Space, DatePicker, Select, Upload, message, Steps, Row, Col, Card } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
 const { Option } = Select;
+
 const { Step } = Steps;
 
 const HospitalForm = ({ token }) => {
@@ -82,7 +83,7 @@ const HospitalForm = ({ token }) => {
             });
 
             const response = await axios.post(
-                'http://localhost:5500/api/v1/hospitals/create-hospital',
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/create-hospital`,
                 submitData,
                 {
                     headers: {
@@ -195,7 +196,7 @@ const HospitalForm = ({ token }) => {
                                     <Form.Item
                                         label="Hospital Phone Number"
                                         name="hospitalPhoneNumber"
-                                        rules={[{ required: true, message: 'Please input valid Phone Number', min: 10, max: 12 }]}
+                                        rules={[{ required: true, message: 'Please input valid Phone Number', min: 10, max: 15 }]}
                                     >
                                         <Input type="number" name="phone_number" minLength={10} maxLength={12} placeholder="Enter Hospital Phone Number" value={formData.phone_number} onChange={handleInputChange} />
                                     </Form.Item>
@@ -371,6 +372,42 @@ const HospitalForm = ({ token }) => {
                         <div>
                             <h3>Summary</h3>
                             <p>Please review your details before submitting.</p>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Card title="Hospital Information">
+                                        <p><strong>Account Type:</strong> {formData?.account_type}</p>
+                                        <p><strong>Hospital Name:</strong> {formData?.first_name}</p>
+                                        <p><strong>Hospital Phone Number:</strong> {formData?.phone_number}</p>
+                                        <p><strong>Hospital Email:</strong> {formData?.email}</p>
+                                    </Card>
+                                </Col>
+                                <Col span={12}>
+                                    <Card title="Address Details">
+                                        <p><strong>Address Line 1:</strong> {formData?.address_line_1}</p>
+                                        <p><strong>Address Line 2:</strong> {formData?.address_line_2}</p>
+                                        <p><strong>City:</strong> {formData?.city}</p>
+                                        <p><strong>State:</strong> {formData?.state}</p>
+                                        <p><strong>Pin Code:</strong> {formData?.pin_code}</p>
+                                    </Card>
+                                </Col>
+                            </Row>
+                            <Row gutter={16} className='mt-2'>
+                                <Col span={12}>
+                                    <Card title="Bank Details">
+                                        <p><strong>Account Holder Name:</strong> {formData?.account_holder_name}</p>
+                                        <p><strong>Account Number:</strong> {formData?.account_number}</p>
+                                        <p><strong>Bank Name:</strong> {formData?.bank_name}</p>
+                                        <p><strong>IFSC Code:</strong> {formData?.ifsc_code}</p>
+                                    </Card>
+                                </Col>
+                                <Col span={12}>
+                                    <Card title="Documents Uploaded">
+                                        <p><strong>Hospital Registration Certificate:</strong> {formData?.hospital_registration_certificate?.length > 0 ? 'Uploaded' : 'Not Uploaded'}</p>
+                                        <p><strong>Hospital PAN Card:</strong> {formData?.hospital_pan_card?.length > 0 ? 'Uploaded' : 'Not Uploaded'}</p>
+                                        <p><strong>Cancelled Cheque:</strong> {formData?.cancelled_cheque?.length > 0 ? 'Uploaded' : 'Not Uploaded'}</p>
+                                    </Card>
+                                </Col>
+                            </Row>
                         </div>
                     )}
 

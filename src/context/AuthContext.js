@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUserData = async (token) => {
         try {
-            const response = await axios.get('http://localhost:5500/api/v1/users', {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users`, {
                 headers: {
                     Authorization: `Bearer ${token}` // Use the token in the Authorization header
                 }

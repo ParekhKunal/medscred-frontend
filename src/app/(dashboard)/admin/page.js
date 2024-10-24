@@ -12,11 +12,6 @@ import { Row, Col, Card, Statistic, Calendar, Tooltip, Badge, Popover, List, Fle
 import { ArrowDownOutlined, ArrowUpOutlined, UserAddOutlined, UserOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
 
 // Sample event data
-const events = [
-    { date: '2024-10-21', type: 'birthday', name: 'John Doe' },
-    { date: '2024-10-31', type: 'holiday', name: 'Halloween' },
-    { date: '2024-12-25', type: 'holiday', name: 'Christmas' },
-];
 
 const activityData = [
     {
@@ -37,6 +32,15 @@ const activityData = [
         icon: <UserOutlined />,
         timestamp: '30 minutes ago'
     }
+];
+
+const events = [
+    { date: '2024-10-09', type: 'birthday', name: 'Kunal Parekh' },
+    { date: '2024-10-31', type: 'holiday', name: 'Diwali' },
+    { date: '2024-11-01', type: 'holiday', name: 'Diwali' },
+    { date: '2024-11-02', type: 'holiday', name: 'Diwali' },
+    { date: '2024-11-03', type: 'holiday', name: 'Diwali' },
+    { date: '2024-11-04', type: 'holiday', name: 'Diwali' },
 ];
 
 
@@ -74,7 +78,7 @@ function Admin() {
     useEffect(() => {
         const fetchHospitalList = async () => {
             try {
-                const response = await fetch('http://localhost:5500/api/v1/hospitals/get-hospitals', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/get-hospitals`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

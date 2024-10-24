@@ -189,7 +189,7 @@ function EditHospital({ params }) {
     const fetchHospitalDetails = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:5500/api/v1/hospitals/get-hospital-by-id/${id}`, {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/get-hospital-by-id/${id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -312,7 +312,7 @@ function EditHospital({ params }) {
             console.log("Form data before submission:", formData);
 
             const response = await axios.post(
-                `http://localhost:5500/api/v1/hospitals/update-hospital/${id}`,
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/update-hospital/${id}`,
                 submitData,
                 {
                     headers: {
@@ -321,6 +321,8 @@ function EditHospital({ params }) {
                     },
                 }
             );
+
+            fetchHospitalDetails();
 
             message.success('Hospital Data Updated Successfully');
 
@@ -431,17 +433,18 @@ function EditHospital({ params }) {
                                     </div>
                                 </div>
                                 <div className="md:col-span-2 mt-4 w-full">
-                                    {hospitalData.status + 1 === 5 && (!hospitalData.reimburse_commission || !hospitalData.cashless_commission) ? (
-                                        <div className="text-red-500 font-bold" style={{ fontSize: 12 }}>Next Status is MOU Send before that Please Insert Reimburse, Cashless and Asthetic Commission first.</div>
-                                    ) : (
-                                        <StatusUpdate
-                                            token={token}
-                                            currentStatus={hospitalData.status}
-                                            hospitalId={hospitalData.id}
-                                            onStatusUpdate={handleStatusUpdate}
-                                            hospitalEmail={hospitalData.email}
-                                        />
-                                    )}
+                                    {
+                                        hospitalData.status + 1 === 5 && (!fromData.reimburse_commission || !fromData.cashless_commission || !fromData.asthetic) ? (
+                                            <div className="text-red-500 font-bold" style={{ fontSize: 12 }}>Next Status is MOU Send before that Please Insert Reimburse, Cashless and Asthetic Commission first.</div>
+                                        ) : (
+                                            <StatusUpdate
+                                                token={token}
+                                                currentStatus={hospitalData.status}
+                                                hospitalId={hospitalData.id}
+                                                onStatusUpdate={handleStatusUpdate}
+                                                hospitalEmail={hospitalData.email}
+                                            />
+                                        )}
                                 </div>
                             </Card>
 

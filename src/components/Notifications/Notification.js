@@ -31,7 +31,7 @@ function Notification({ currentStatus }) {
             textColor = 'text-white';
             break;
         case 5:
-            message = "Need to Send MOU Update the Status MOU will be send to the Hospital";
+            message = "Need to Send MOU, Update the Status";
             icon = <CheckCircleOutlined className="mr-2" />;
             bgColor = 'bg-green-100';
             textColor = 'text-green-800';
@@ -43,7 +43,7 @@ function Notification({ currentStatus }) {
             textColor = 'text-yellow-800';
             break;
         case 7:
-            message = "MOU Verification Stage";
+            message = "Document Verification Stage";
             icon = <WarningOutlined className="mr-2" />;
             bgColor = 'bg-yellow-100';
             textColor = 'text-yellow-800';

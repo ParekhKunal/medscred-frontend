@@ -16,7 +16,7 @@ const Login = () => {
         try {
             e.preventDefault();
             // Replace with your actual API call
-            const data = await axios.post('http://localhost:5500/api/v1/auth/login', {
+            const data = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
                 email,
                 password,
             });
@@ -33,6 +33,10 @@ const Login = () => {
                 router.replace('/partner');
             } else if (role == 5) {
                 router.replace('/nbfc');
+            } else if (role == 6) {
+                router.replace('/hr');
+            } else if (role == 7) {
+                router.replace('/operations');
             } else {
                 console.error('Unknown user role:', role);
             }

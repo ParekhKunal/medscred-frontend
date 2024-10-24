@@ -8,8 +8,8 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header/Header';
 import Cards from '@/components/Cards/Cards';
 import HospitalsList from '@/components/DataGrid/HospitalsList';
-import { Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Button, Divider, Flex, Spin } from 'antd';
+import { PlusOutlined, FileExcelOutlined, LoadingOutlined } from '@ant-design/icons';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
 
 function Hospitals() {
@@ -23,7 +23,7 @@ function Hospitals() {
     useEffect(() => {
         const fetchHospitalList = async () => {
             try {
-                const response = await fetch('http://localhost:5500/api/v1/hospitals/get-hospitals', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/get-hospitals`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -49,18 +49,41 @@ function Hospitals() {
         }
     }, [token]);
 
-    if (loading) return <div className='w-100 h-screen flex justify-center align-ceneter'>Loading...</div>;
+    const handleExport = async () => {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/export-all`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `hospital_data.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    if (loading) return <div className='flex justify-center w-full h-screen items-center'><Flex><Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} /></Flex></div>;
 
     return (
         <div>
             <Navbar role={user?.data?.role} />
-            <div className="w-100 items-center justify-around mt-8 mb-8 ml-24">
-                <h1 className="text-3xl font-bold mb-4" >Hospitals List</h1>
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push('/add/hospitals')}>
-                    Add Hospital
-                </Button>
+            <div className="w-[85%] items-center justify-between mt-8 ml-24 flex">
+                <h1 className="text-3xl font-bold mb-2" >Hospitals List</h1>
+                <div>
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push('/add/hospitals')}>
+                        Add Hospital
+                    </Button>
+                    {user?.data?.role == 1 &&
+                        <Button className='ml-8' type="primary" icon={<FileExcelOutlined />} onClick={handleExport}>
+                            Export Data
+                        </Button>
+                    }
+                </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
                 <HospitalsList hospitalData={hospitalData} datasize={8} />
             </div>
         </div>

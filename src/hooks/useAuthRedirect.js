@@ -25,7 +25,9 @@ const useAuthRedirect = (pageName) => {
 
         const fetchPermissions = async () => {
             try {
-                const response = await axios.get('http://localhost:5500/api/v1/auth/role-permission', {
+                console.log(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/role-permission`);
+                
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/role-permission`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 

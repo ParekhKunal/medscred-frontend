@@ -12,11 +12,33 @@ import Header from '@/components/Header/Header';
 
 // Sample event data
 const events = [
-    { date: '2024-10-21', type: 'birthday', name: 'John Doe' },
-    { date: '2024-10-31', type: 'holiday', name: 'Halloween' },
-    { date: '2024-12-25', type: 'holiday', name: 'Christmas' },
+    { date: '2024-10-09', type: 'birthday', name: 'Kunal Parekh' },
+    { date: '2024-10-31', type: 'holiday', name: 'Diwali' },
+    { date: '2024-11-01', type: 'holiday', name: 'Diwali' },
+    { date: '2024-11-02', type: 'holiday', name: 'Diwali' },
+    { date: '2024-11-03', type: 'holiday', name: 'Diwali' },
+    { date: '2024-11-04', type: 'holiday', name: 'Diwali' },
 ];
 
+
+// Function to get events for a specific date
+const getEventList = (date) => {
+    return events.filter(event => event.date === date.format('YYYY-MM-DD')); // Use moment to format the date
+};
+
+// Date cell rendering function
+const dateCellRender = (value) => {
+    const eventList = getEventList(value);
+    return (
+        <div style={{ textAlign: 'center' }}>
+            {eventList.length > 0 && (
+                <Tooltip title={eventList.map(event => event.type === 'birthday' ? `${event.name}'s Birthday` : event.name).join(', ')}>
+                    <Badge count={eventList.length} style={{ backgroundColor: '#52c41a' }} />
+                </Tooltip>
+            )}
+        </div>
+    );
+};
 const activityData = [
     {
         id: 1,
@@ -39,25 +61,6 @@ const activityData = [
 ];
 
 
-// Function to get events for a specific date
-const getEventList = (date) => {
-    return events.filter(event => event.date === date.format('YYYY-MM-DD')); // Use moment to format the date
-};
-
-// Date cell rendering function
-const dateCellRender = (value) => {
-    const eventList = getEventList(value);
-    return (
-        <div style={{ textAlign: 'center' }}>
-            {eventList.length > 0 && (
-                <Tooltip title={eventList.map(event => event.type === 'birthday' ? `${event.name}'s Birthday` : event.name).join(', ')}>
-                    <Badge count={eventList.length} style={{ backgroundColor: '#52c41a' }} />
-                </Tooltip>
-            )}
-        </div>
-    );
-};
-
 function Sales() {
 
     useAuthRedirect('dashboard');
@@ -71,7 +74,7 @@ function Sales() {
     useEffect(() => {
         const fetchHospitalList = async () => {
             try {
-                const response = await fetch('http://localhost:5500/api/v1/hospitals/get-hospitals', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/get-hospitals`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
