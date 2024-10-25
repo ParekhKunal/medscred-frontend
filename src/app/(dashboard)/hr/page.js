@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header/Header';
 import Cards from '@/components/Cards/Cards';
 import HospitalsList from '@/components/DataGrid/HospitalsList';
+import HospitalFeed from '@/components/Activity/HospitalFeed';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
 import { Row, Col, Card, Statistic, Calendar, Tooltip, Badge, Popover, List, Flex, Spin } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, UserAddOutlined, UserOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
@@ -66,9 +67,38 @@ function Hr() {
 
     const { user, loading, token } = useAuth();
     const [hospitalData, setHospitalData] = useState([]);
+    const [hospitalDataFeed, setHospitalDataFeed] = useState([]);
     const [loadingHospitals, setLoadingHospitals] = useState(true);
+    const [loadingHospitalsFeed, setLoadingHospitalsFeed] = useState(true);
 
     const router = useRouter();
+
+    const fetchActivityFeed = async () => {
+        setLoadingHospitalsFeed(true)
+        try {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/activity-feed`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            setHospitalDataFeed(response.data.data)
+            console.log(response.data.data);
+
+        } catch (error) {
+            console.error('Error fetching hospitals Status Feed:', error);
+        } finally {
+            setLoadingHospitalsFeed(false); // Set loading to false after fetch attempt
+        }
+    }
+
+    useEffect(() => {
+        if (token) {
+            fetchActivityFeed();
+        } else {
+            setLoadingHospitalsFeed(false);
+        }
+    }, [token])
 
     useEffect(() => {
         const fetchHospitalList = async () => {
@@ -110,9 +140,9 @@ function Hr() {
             <div className="min-h-screen flex flex-col p-6 bg-gray-100">
                 <Header name={user?.data?.first_name} role={user?.data?.role} />
                 <Row gutter={16} style={{ marginTop: '20px' }}>
-                    <Col span={18}>
+                    <Col span={18} xs={24} sm={18} md={18} lg={18} xl={18}>
                         <Row gutter={16}>
-                            <Col span={8}>
+                            <Col span={8} xs={24} sm={12} md={8} lg={8} xl={8} style={{ padding: '10px', marginTop: '10px', marginBottom: '10px' }}>
                                 <Card>
                                     <Statistic precision={2}
                                         valueStyle={{
@@ -121,7 +151,7 @@ function Hr() {
                                         prefix={<ArrowUpOutlined />} title="Total Hospitals" value={hospitalData.length} />
                                 </Card>
                             </Col>
-                            <Col span={8}>
+                            <Col span={8} xs={24} sm={12} md={8} lg={8} xl={8} style={{ padding: '10px', marginTop: '10px', marginBottom: '10px' }}>
                                 <Card>
                                     <Statistic precision={2}
                                         valueStyle={{
@@ -130,7 +160,7 @@ function Hr() {
                                         prefix={<ArrowUpOutlined />} title="Pending Requests" value={12} />
                                 </Card>
                             </Col>
-                            <Col span={8}>
+                            <Col span={8} xs={24} sm={12} md={8} lg={8} xl={8} style={{ padding: '10px', marginTop: '10px', marginBottom: '10px' }}>
                                 <Card>
                                     <Statistic precision={2}
                                         valueStyle={{
@@ -143,26 +173,13 @@ function Hr() {
 
                         <Row gutter={16} style={{ marginTop: '20px' }}>
                             <Col span={24}>
-                                <Card title="Activity Feed" style={{ height: '300px', overflow: 'auto', scrollbarWidth: 'thin' }}>
-                                    <List
-                                        itemLayout="horizontal"
-                                        dataSource={activityData}
-                                        renderItem={item => (
-                                            <List.Item>
-                                                <List.Item.Meta
-                                                    avatar={item.icon}
-                                                    title={item.content}
-                                                    description={item.timestamp}
-                                                />
-                                            </List.Item>
-                                        )}
-                                    />
-                                </Card>
+                                <HospitalFeed loadingHospitalsFeed={loadingHospitalsFeed} hospitalDataFeed={hospitalDataFeed} />
+
                             </Col>
                         </Row>
                     </Col>
 
-                    <Col span={6}>
+                    <Col span={6} xs={0} sm={6} md={6} lg={6} xl={6}>
                         <Card title="Calendar" style={{ height: '100%' }}>
                             <Calendar dateCellRender={dateCellRender} fullscreen={false} />
                         </Card>
@@ -172,7 +189,7 @@ function Hr() {
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                     <HospitalsList hospitalData={hospitalData} datasize={5} />
                 </div>
-            </div>
+            </div >
         </>
     )
 }

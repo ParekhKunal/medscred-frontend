@@ -1,38 +1,18 @@
 'use client'
 
 import Navbar from '@/components/Navbar/Navbar'
+import axios from 'axios';
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header/Header';
 import Cards from '@/components/Cards/Cards';
 import HospitalsList from '@/components/DataGrid/HospitalsList';
+import HospitalFeed from '@/components/Activity/HospitalFeed';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
-import { Row, Col, Card, Statistic, Calendar, Tooltip, Badge, Popover, List, Flex, Spin } from 'antd';
+import { Row, Col, Card, Statistic, Calendar, Tooltip, Badge, Popover, List, Flex, Spin, Skeleton } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, UserAddOutlined, UserOutlined, EditOutlined, LoadingOutlined } from '@ant-design/icons';
 
-// Sample event data
-
-const activityData = [
-    {
-        id: 1,
-        content: 'User John Doe added a new hospital.',
-        icon: <UserAddOutlined />,
-        timestamp: '2 minutes ago'
-    },
-    {
-        id: 2,
-        content: 'Hospital XYZ updated their contact information.',
-        icon: <EditOutlined />,
-        timestamp: '10 minutes ago'
-    },
-    {
-        id: 3,
-        content: 'New user registration for Dr. Smith.',
-        icon: <UserOutlined />,
-        timestamp: '30 minutes ago'
-    }
-];
 
 const events = [
     { date: '2024-10-09', type: 'birthday', name: 'Kunal Parekh' },
@@ -69,14 +49,43 @@ function Admin() {
 
     const { user, loading, token } = useAuth();
     const [hospitalData, setHospitalData] = useState([]);
+    const [hospitalDataFeed, setHospitalDataFeed] = useState([]);
     const [loadingHospitals, setLoadingHospitals] = useState(true);
+    const [loadingHospitalsFeed, setLoadingHospitalsFeed] = useState(true);
 
     const router = useRouter();
 
 
+    const fetchActivityFeed = async () => {
+        setLoadingHospitalsFeed(true)
+        try {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/activity-feed`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            setHospitalDataFeed(response.data.data)
+            console.log(response.data.data);
+
+        } catch (error) {
+            console.error('Error fetching hospitals Status Feed:', error);
+        } finally {
+            setLoadingHospitalsFeed(false); // Set loading to false after fetch attempt
+        }
+    }
+
+    useEffect(() => {
+        if (token) {
+            fetchActivityFeed();
+        } else {
+            setLoadingHospitalsFeed(false);
+        }
+    }, [token])
 
     useEffect(() => {
         const fetchHospitalList = async () => {
+            setLoadingHospitals(true);
             try {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/get-hospitals`, {
                     method: 'GET',
@@ -95,11 +104,15 @@ function Admin() {
                 setHospitalData(data.data);
             } catch (error) {
                 console.error('Error fetching hospitals:', error);
+            } finally {
+                setLoadingHospitals(false); // Set loading to false after fetch attempt
             }
         };
 
         if (token) {
             fetchHospitalList(); // Trigger API call if token is available
+        } else {
+            setLoadingHospitals(false); // Set loading to false if no token is available
         }
     }, [token]);
 
@@ -114,9 +127,9 @@ function Admin() {
             <div className="min-h-screen flex flex-col p-6 bg-gray-100">
                 <Header name={user?.data?.first_name} role={user?.data?.role} />
                 <Row gutter={16} style={{ marginTop: '20px' }}>
-                    <Col span={18}>
+                    <Col span={18} xs={24} sm={18} md={18} lg={18} xl={18} >
                         <Row gutter={16}>
-                            <Col span={8}>
+                            <Col span={8} xs={24} sm={12} md={8} lg={8} xl={8} style={{ padding: '10px', marginTop: '10px', marginBottom: '10px' }}>
                                 <Card>
                                     <Statistic precision={2}
                                         valueStyle={{
@@ -125,49 +138,35 @@ function Admin() {
                                         prefix={<ArrowUpOutlined />} title="Total Hospitals" value={hospitalData.length} />
                                 </Card>
                             </Col>
-                            <Col span={8}>
+                            <Col span={8} xs={24} sm={12} md={8} lg={8} xl={8} style={{ padding: '10px', marginTop: '10px', marginBottom: '10px' }}>
                                 <Card>
                                     <Statistic precision={2}
                                         valueStyle={{
                                             color: '#3f8600',
                                         }}
-                                        prefix={<ArrowUpOutlined />} title="Pending Requests" value={12} />
+                                        prefix={<ArrowUpOutlined />} title="Pending Requests" value={0} />
                                 </Card>
                             </Col>
-                            <Col span={8}>
+                            <Col span={8} xs={24} sm={12} md={8} lg={8} xl={8} style={{ padding: '10px', marginTop: '10px', marginBottom: '10px' }}>
                                 <Card>
                                     <Statistic precision={2}
                                         valueStyle={{
                                             color: '#3f8600',
                                         }}
-                                        prefix={<ArrowUpOutlined />} title="Active Users" value={30} />
+                                        prefix={<ArrowUpOutlined />} title="Active Users" value={0} />
                                 </Card>
                             </Col>
                         </Row>
 
                         <Row gutter={16} style={{ marginTop: '20px' }}>
                             <Col span={24}>
-                                <Card title="Activity Feed" style={{ height: '300px', overflow: 'auto', scrollbarWidth: 'thin' }}>
-                                    <List
-                                        itemLayout="horizontal"
-                                        dataSource={activityData}
-                                        renderItem={item => (
-                                            <List.Item>
-                                                <List.Item.Meta
-                                                    avatar={item.icon}
-                                                    title={item.content}
-                                                    description={item.timestamp}
-                                                />
-                                            </List.Item>
-                                        )}
-                                    />
-                                </Card>
+                                <HospitalFeed loadingHospitalsFeed={loadingHospitalsFeed} hospitalDataFeed={hospitalDataFeed} />
                             </Col>
                         </Row>
                     </Col>
 
-                    <Col span={6}>
-                        <Card title="Calendar" style={{ height: '100%' }}>
+                    <Col span={6} xs={0} sm={6} md={6} lg={6} xl={6}>
+                        <Card title="Calendar" >
                             <Calendar dateCellRender={dateCellRender} fullscreen={false} />
                         </Card>
                     </Col>

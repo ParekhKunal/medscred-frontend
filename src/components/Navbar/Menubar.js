@@ -44,7 +44,6 @@ function Menubar({ role }) {
     };
 
     const handleMenuClick = (e) => {
-        console.log('Click on menu item:', e);
         if (e.key === "3") {
             logout();
         }
@@ -247,11 +246,11 @@ function Menubar({ role }) {
                         <div className="flex items-center justify-between">
                             <a href="#" className="-m-1.5 p-1.5">
                                 <span className="sr-only">Your Company</span>
-                                <Image width={50} height={50}
+                                {/* <Image width={50} height={50}
                                     alt=""
                                     src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
                                     className="h-8 w-auto"
-                                />
+                                /> */}
                             </a>
                             <button
                                 type="button"
@@ -354,6 +353,12 @@ function Menubar({ role }) {
                                         className="-mx-3 block rounded-lg px-3 py-2 text-base font-normal leading-7 text-gray-900 hover:bg-gray-50"
                                     >
                                         My Profile
+                                    </a>
+                                    <a onClick={(e) => { e.preventDefault(); logout(); }}
+
+                                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-normal leading-7 text-gray-900 hover:bg-gray-50"
+                                    >
+                                        Logout
                                     </a>
                                 </div>
                             </div>

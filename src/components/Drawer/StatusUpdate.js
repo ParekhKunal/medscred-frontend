@@ -89,9 +89,6 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
             submitData.append('summary', summary);
             submitData.append('email', hospitalEmail);
 
-            console.log("Form data before submission:", Array.from(submitData.entries()));
-
-            console.log("Submit Data", submitData);
 
             // Prepare data for submission
             const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/update-hospital-status/${hospitalId}`,
@@ -168,7 +165,6 @@ function StatusUpdate({ token, currentStatus, hospitalId, onStatusUpdate, hospit
 
     const handlePassword = (e) => {
         const value = e.target.value;
-        console.log(value);
 
         if (value.length <= 250) {
             setPassword(value);

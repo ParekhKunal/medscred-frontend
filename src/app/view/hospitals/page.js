@@ -36,7 +36,6 @@ function Hospitals() {
                 }
 
                 const data = await response.json();
-                console.log(data.data);
 
                 setHospitalData(data.data);
             } catch (error) {

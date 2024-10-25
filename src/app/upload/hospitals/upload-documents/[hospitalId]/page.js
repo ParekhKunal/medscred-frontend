@@ -110,9 +110,6 @@ function UploadDocuments({ params }) {
                 }
             });
 
-
-            console.log("Form data before submission:", formData);
-
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/update-hospital-by-unicode/${hospitalId}`,
                 submitData,

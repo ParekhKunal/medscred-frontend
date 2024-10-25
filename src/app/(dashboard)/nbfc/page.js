@@ -11,8 +11,6 @@ function Nbfc() {
     const { user, loading, token } = useAuth();
     const router = useRouter();
 
-    console.log(token);
-
     useEffect(() => {
         if (loading) return;
 

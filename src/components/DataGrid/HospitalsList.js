@@ -13,7 +13,7 @@ function HospitalsList({ hospitalData, datasize }) {
     const pageSize = datasize
 
     const onChange = (pagination, filters, sorter, extra) => {
-        console.log('params', pagination, filters, sorter, extra);
+        // console.log('params', pagination, filters, sorter, extra);
     };
 
     const handleSearch = (selectedKeys, confirm) => {
@@ -28,7 +28,7 @@ function HospitalsList({ hospitalData, datasize }) {
 
     return (
         <>
-            <Table dataSource={hospitalData} pagination={{ pageSize: pageSize }} className='w-[100%]'>
+            <Table dataSource={hospitalData} pagination={{ pageSize: pageSize }} className="min-w-full" scroll={{ x: true }}>
                 <Column title="Name" dataIndex="first_name" key="firstName" filterMode="menu"
                     filterSearch={true}
                     filterDropdown={({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
