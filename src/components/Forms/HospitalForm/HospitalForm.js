@@ -138,7 +138,7 @@ const HospitalForm = ({ token }) => {
             setCurrentStep((prev) => prev + 1);
         } catch (errorInfo) {
             openNotificationWithIcon('error')
-
+            console.log('Validation Failed:', errorInfo);
         }
     };
 
@@ -160,7 +160,7 @@ const HospitalForm = ({ token }) => {
                 </Steps>
 
                 <Form
-
+                    form={form}
                     layout="vertical"
                     onFinish={onFinish}
                 >

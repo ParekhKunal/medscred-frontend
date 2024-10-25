@@ -49,7 +49,7 @@ function Notification({ currentStatus }) {
             textColor = 'text-yellow-800';
             break;
         case 8:
-            message = "Email & Password Sending Stage Update the Status it will be share automatically";
+            message = "Email & Password Sending Stage Update the Status";
             icon = <WarningOutlined className="mr-2" />;
             bgColor = 'bg-yellow-100';
             textColor = 'text-yellow-800';
@@ -61,7 +61,7 @@ function Notification({ currentStatus }) {
             textColor = 'text-yellow-800';
             break;
         default:
-            message = "Dr. XYZ has some unverified information.";
+            message = "NULL";
             icon = <InfoCircleOutlined className="mr-2" />;
             bgColor = 'bg-gray-100';
             textColor = 'text-gray-800';

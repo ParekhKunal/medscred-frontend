@@ -52,26 +52,29 @@ function Sales() {
     const [loadingHospitalsFeed, setLoadingHospitalsFeed] = useState(true);
     const router = useRouter();
 
-    const fetchActivityFeed = async () => {
-        setLoadingHospitalsFeed(true)
-        try {
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/activity-feed`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            setHospitalDataFeed(response.data.data)
-            console.log(response.data.data);
-
-        } catch (error) {
-            console.error('Error fetching hospitals Status Feed:', error);
-        } finally {
-            setLoadingHospitalsFeed(false); // Set loading to false after fetch attempt
-        }
-    }
-
+   
     useEffect(() => {
+
+        const fetchActivityFeed = async () => {
+            setLoadingHospitalsFeed(true)
+            try {
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/activity-feed`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                setHospitalDataFeed(response.data.data)
+                console.log(response.data.data);
+
+            } catch (error) {
+                console.error('Error fetching hospitals Status Feed:', error);
+            } finally {
+                setLoadingHospitalsFeed(false); // Set loading to false after fetch attempt
+            }
+        }
+
+
         if (token) {
             fetchActivityFeed();
         } else {

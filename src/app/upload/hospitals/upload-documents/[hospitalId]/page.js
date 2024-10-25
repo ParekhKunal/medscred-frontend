@@ -16,11 +16,14 @@ function UploadDocuments({ params }) {
     const { hospitalId } = params;
 
 
+    const router = useRouter();
     const [hospitalData, setHospitalData] = useState(null);
+    const [email, setEmail] = useState(null);
+    const [phoneNumber, setPhoneNumber] = useState(null);
+    const [firstName, setFirstName] = useState(null);
     const [loading, setLoading] = useState(true);
     const [form] = Form.useForm();
     const [api, contextHolder] = notification.useNotification();
-    const router = useRouter();
 
     const [formData, setFormData] = useState({
         unicode: hospitalId,
@@ -43,7 +46,10 @@ function UploadDocuments({ params }) {
             try {
                 const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hospitals/get-hospital-by-unicode/${hospitalId}`);
                 if (response.data && response.data.status === 'OK') {
-                    setHospitalData(response.data.data[0]); // Access first element
+                    setHospitalData(response.data.data[0]);
+                    setEmail(response.data.data[0].email)
+                    setFirstName(response.data.data[0].first_name)
+                    setPhoneNumber(response.data.data[0].phone_number)
                 } else {
                     notification.error({
                         message: 'Error',
@@ -96,6 +102,12 @@ function UploadDocuments({ params }) {
         }
     };
 
+
+    const handleRedirect = () => {
+
+        router.replace(`/view/thanks?firstName=${firstName}&email=${email}&phoneNumber:${phoneNumber}`);
+    };
+
     const onSubmit = async () => {
         try {
             // Prepare data for submission
@@ -122,7 +134,8 @@ function UploadDocuments({ params }) {
 
             message.success('Thanks For Submitting the Data');
 
-            router.replace('/view/thanks')
+
+            handleRedirect();
 
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -294,7 +307,7 @@ function UploadDocuments({ params }) {
                             </Col>
                             }
                             {!hospitalData.hospital_pan_card &&
-                                <Col>
+                                <Col span={8}>
                                     <h1><span style={{ color: 'red' }}>*</span>Upload PAN Card*</h1>
                                     <FormItem rules={[{ required: true, message: 'Please Upload The File' }]}>
                                         <Dragger {...uploadProps('hospital_pan_card')} style={{ width: '100%', height: '80px', padding: '20px' }}>

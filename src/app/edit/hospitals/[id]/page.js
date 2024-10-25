@@ -30,7 +30,7 @@ function EditHospital({ params }) {
 
     useAuthRedirect('update_hospital');
 
-
+    const [form] = Form.useForm();
     const { id } = useParams();
     const { loading, token, user } = useAuth();
     const [isLoading, setLoading] = useState(true);
@@ -38,7 +38,7 @@ function EditHospital({ params }) {
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [formData, setFormData] = useState({
         permission_name: 'update_hospital',
-        account_type: [],
+        account_type: '',
         first_name: '',
         email: '',
         phone_number: '',
@@ -68,6 +68,8 @@ function EditHospital({ params }) {
         gst_certificate_url: null,
         certificate_of_incorporation_url: null,
         rohini_certificate_url: null,
+        mou: null,
+        mou_url: null,
     });
 
     const [hospitalData, setHospitalData] = useState(null);
@@ -145,38 +147,55 @@ function EditHospital({ params }) {
             ...prevFormData,
             account_type: value.join(',')
         }));
+        console.log(account_type);
     };
 
     const handleFileChange = (fileType) => (info) => {
-        const newFileList = info.fileList.map(file => {
-            if (file.response) {
-                return {
-                    ...file,
-                    url: file.response.url
-                };
-            }
-            return file;
+        const { fileList } = info;
+
+        // Check if the specific file type is being handled
+        if ((fileType === 'hospital_registration_certificate' && fileList.length === 0) || (fileType === 'hospital_pan_card' && fileList.length === 0) || (fileType === 'cancelled_cheque' && fileList.length === 0)) {
+            notification.warning({
+                message: 'Upload Required',
+                description: `Please upload the ${fileType.replace(/_/g, ' ')}.`,
+                duration: 3,
+            });
+        } else {
+            const newFileList = fileList.map(file => {
+                if (file.response) {
+                    return {
+                        ...file,
+                        url: file.response.url // Assuming the server responds with a URL
+                    };
+                }
+                return file;
+            });
+
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                [fileType]: newFileList, // Update state with new file list
+            }));
+        }
+    };
+
+    const handleFileRemove = (fileType, urlSuffix) => (file) => {
+        setFormData((prevFormData) => {
+            const updatedFileList = prevFormData[fileType]?.filter(item => item.uid !== file.uid) || [];
+            return {
+                ...prevFormData,
+                [fileType]: updatedFileList,
+                [urlSuffix]: '',
+            };
         });
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            [fileType]: info.fileList,
-        }));
-    };
-
-    const handleFileRemove = (fileType) => (file) => {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            [fileType]: prevFormData[fileType].filter(item => item.uid !== file.uid),
-        }));
     };
 
 
-    const uploadProps = (name) => ({
+    const uploadProps = (name, urlSuffix) => ({
         name,
         multiple: true,
         fileList: formData[name] || [], // Use the name parameter to access the correct file list
-        onChange: handleFileChange(name), // Pass the name for handling changes
-        onRemove: handleFileRemove(name),
+        onChange: handleFileChange(name),
+        onRemove: handleFileRemove(name, urlSuffix),
         showUploadList: true, // Show the list of uploaded files
         beforeUpload: (file) => false,
     });
@@ -184,6 +203,13 @@ function EditHospital({ params }) {
     useEffect(() => {
         console.log('Updated formData:', formData);
     }, [formData]);
+
+    const openNotification = (message) => {
+        notification.warning({
+            message: 'Validation Error',
+            description: message,
+        });
+    };
 
 
     const fetchHospitalDetails = async () => {
@@ -198,10 +224,12 @@ function EditHospital({ params }) {
 
             if (response.data && response.data.status === 'OK') {
                 const data = response.data.data[0];
+                console.log(data.account_type);
+
                 setHospitalData(data);
                 setFormData((prevFormData) => ({
                     ...prevFormData,
-                    account_type: data?.account_type?.split(','),
+                    account_type: data?.account_type ? data.account_type.split(',') : [],
                     first_name: data.first_name,
                     email: data.email,
                     phone_number: data.phone_number,
@@ -286,25 +314,76 @@ function EditHospital({ params }) {
         fetchHospitalDetails();
     }, [token, id]);
 
+    const handleStatusUpdate = () => {
+        fetchHospitalDetails();
+    };
 
     const onSubmit = async () => {
         try {
-            // Prepare data for submission
             const submitData = new FormData();
+
+            if (!formData.account_type || formData.account_type.length === 0) {
+                formData.account_type = hospitalData.account_type ? hospitalData.account_type.split(',') : [];
+            }
+
+            // Convert `account_type` back to a comma-separated string for backend if necessary
+            submitData.append('account_type', formData.account_type.join(','));
+            // Prepare data for submission
+            const requiredFields = {
+                account_type: 'Please enter the Account Type.',
+                first_name: 'Please enter the Hospital Name',
+                email: 'Please enter the Email.',
+                phone_number: 'Please enter the Phone Number',
+                address_line_1: 'Please enter the Address Line 1.',
+                city: 'Please enter the City',
+                state: 'Please enter the State',
+                pincode: 'Please enter the Pin Code',
+                reimburse_commission: 'Please enter the Reimbursement Commission.',
+                cashless_commission: 'Please enter the Cashless Commission.',
+                asthetic_commission: 'Please enter the Aesthetic Commission.',
+                account_holder_name: 'Please enter the Account Holder Name.',
+                account_number: 'Please enter the Account Number.',
+                bank_name: 'Please enter the Bank Name.',
+                ifsc_code: 'Please enter the IFSC Code.',
+            };
+
+            for (const [field, message] of Object.entries(requiredFields)) {
+                if (!formData[field]) {
+                    openNotification(message);
+                    return;
+                }
+            }
+
+            const requiredFiles = {
+                hospital_registration_certificate: 'Please upload the Hospital Registration Certificate.',
+                hospital_pan_card: 'Please upload the Hospital PAN Card.',
+                cancelled_cheque: 'Please upload the Cancelled Cheque.',
+            };
+
+            for (const [fileField, fileMessage] of Object.entries(requiredFiles)) {
+                if (!formData[fileField] || formData[fileField].length === 0) {
+                    openNotification(fileMessage);
+                    return;
+                }
+            }
+
             Object.entries(formData).forEach(([key, value]) => {
                 if (Array.isArray(value)) {
+                    // Handle array of files
                     if (value.length > 0 && value[0].originFileObj) {
                         value.forEach((file) => {
                             submitData.append(key, file.originFileObj);
                         });
                     } else {
+                        // Append existing URL if available
                         const existingUrlKey = `${key}_url`;
                         if (formData[existingUrlKey]) {
                             submitData.append(key, formData[existingUrlKey]);
                         }
                     }
                 } else {
-                    submitData.append(key, value);
+                    // Convert numeric fields to string
+                    submitData.append(key, String(value));
                 }
             });
 
@@ -320,8 +399,6 @@ function EditHospital({ params }) {
                 }
             );
 
-            fetchHospitalDetails();
-
             message.success('Hospital Data Updated Successfully');
 
 
@@ -331,9 +408,7 @@ function EditHospital({ params }) {
         }
     };
 
-    const handleStatusUpdate = () => {
-        fetchHospitalDetails();
-    };
+
 
 
 
@@ -354,7 +429,7 @@ function EditHospital({ params }) {
                             hospitalData?.status == 2 && <div className="flex justify-between items-center bg-green-100 text-white-300 p-4 mb-6 rounded-md">
                                 <span className="flex items-center">
                                     <InfoCircleOutlined className="mr-2" />
-                                    {hospitalData.document_upload_link}
+                                    {hospitalData?.document_upload_link}
                                 </span>
                                 <div>
                                     <Button type="primary" onClick={handleCopyLink}>Copy Link</Button>
@@ -376,7 +451,7 @@ function EditHospital({ params }) {
                             )}
                         </Modal>
 
-                        <Notification currentStatus={hospitalData.status} />
+                        <Notification currentStatus={hospitalData.status + 1} />
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
                             <Card className="shadow-lg">
@@ -432,7 +507,7 @@ function EditHospital({ params }) {
                                 </div>
                                 <div className="md:col-span-2 mt-4 w-full">
                                     {
-                                        hospitalData.status + 1 === 5 && (!fromData.reimburse_commission || !fromData.cashless_commission || !fromData.asthetic) ? (
+                                        hospitalData.status + 1 === 5 && (!formData.reimburse_commission || !formData.cashless_commission || !formData.asthetic_commission) ? (
                                             <div className="text-red-500 font-bold" style={{ fontSize: 12 }}>Next Status is MOU Send before that Please Insert Reimburse, Cashless and Asthetic Commission first.</div>
                                         ) : (
                                             <StatusUpdate
@@ -499,7 +574,7 @@ function EditHospital({ params }) {
                     <div className="flex items-center p-6 bg-gray-50 w-full">
                         <Card title="Status Timeline" className="w-full shadow-lg">
                             <div style={{ width: '100%', overflowX: 'auto', whiteSpace: 'nowrap', padding: '10px 0', display: 'flex', scrollbarWidth: 'thin' }}>
-                                <Steps current={hospitalData.status - 1} size="small" direction="horizontal" style={{ display: 'flex', minWidth: 'max-content' }}>
+                                <Steps current={hospitalData.status} size="small" direction="horizontal" style={{ display: 'flex', minWidth: 'max-content' }}>
                                     <Step title="Open Lead" description="Basic Hospital Details Added On Portal Without Documents." />
                                     <Step title="Under Process" description="Document Collection Stage & Bank Details" />
                                     <Step title="Doc Received" description="Documents Received From Hospital Or MedsCred" />
@@ -522,10 +597,11 @@ function EditHospital({ params }) {
                                 <Form.Item
                                     label="Account Type"
                                     name="account_type"
-                                    initialValue={formData.account_type}
+                                    initialValue={hospitalData?.account_type ? hospitalData.account_type.split(',') : []}
                                     rules={[{ required: true, message: 'Please select account type!' }]}
                                 >
-                                    <Select disabled name="account_type" mode="multiple" placeholder="Select account types" onChange={handleSelectChange} value={formData.account_type}>
+                                    <Select name="account_type" mode="multiple" placeholder="Select account types" onChange={(value) => setFormData((prev) => ({ ...prev, account_type: value }))}
+                                    >
                                         <Option value="Reimbursement">Reimbursement</Option>
                                         <Option value="Cashless">Cashless</Option>
                                         <Option value="Aesthetic">Aesthetic</Option>
@@ -539,7 +615,7 @@ function EditHospital({ params }) {
                                     initialValue={formData.first_name}
                                     rules={[{ required: true, message: 'Please input Hospital Name' }]}
                                 >
-                                    <Input disabled name='first_name' value={formData.first_name} onChange={handleInputChange} placeholder="Enter Hospital Name" />
+                                    <Input name='first_name' value={formData.first_name} onChange={handleInputChange} placeholder="Enter Hospital Name" />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -551,7 +627,7 @@ function EditHospital({ params }) {
                                     initialValue={formData.phone_number}
                                     rules={[{ required: true, message: 'Please input valid Phone Number', min: 10, max: 12 }]}
                                 >
-                                    <Input disabled type="number" name="phone_number" minLength={10} maxLength={12} placeholder="Enter Hospital Phone Number" value={formData.phone_number} onChange={handleInputChange} />
+                                    <Input type="number" name="phone_number" minLength={10} maxLength={12} placeholder="Enter Hospital Phone Number" value={formData.phone_number} onChange={handleInputChange} />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
@@ -673,9 +749,9 @@ function EditHospital({ params }) {
                                     label="Account Number"
                                     name="account_number"
                                     initialValue={formData.account_number}
-                                    rules={[{ required: true, message: 'Please input Account Holder Name!', min: 8, max: 20 }]}
+                                    rules={[{ required: true, message: 'Please input Account Holder Name!' }]}
                                 >
-                                    <Input type='number' placeholder="Enter Account Number" name='account_number' value={formData.account_number} onChange={handleInputChange} />
+                                    <Input placeholder="Enter Account Number" name='account_number' value={formData.account_number} onChange={handleInputChange} />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -751,7 +827,7 @@ function EditHospital({ params }) {
                             <Col span={8}>
                                 <h1><span style={{ color: 'red' }}>*</span>Hospital Registration Certificate*</h1>
                                 <Form.Item rules={[{ required: true, message: 'Please Upload The File' }]}>
-                                    <Dragger {...uploadProps('hospital_registration_certificate')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                    <Dragger {...uploadProps('hospital_registration_certificate', 'hospital_registration_certificate_url')} style={{ width: '100%', height: '80px', padding: '20px' }}>
                                         <p className="ant-upload-drag-icon">
                                             <InboxOutlined />
                                         </p>
@@ -764,7 +840,7 @@ function EditHospital({ params }) {
                             <Col span={8}>
                                 <h1><span style={{ color: 'red' }}>*</span>Upload PAN Card*</h1>
                                 <Form.Item rules={[{ required: true, message: 'Please Upload The File' }]}>
-                                    <Dragger {...uploadProps('hospital_pan_card')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                    <Dragger {...uploadProps('hospital_pan_card', 'hospital_pan_card_url')} style={{ width: '100%', height: '80px', padding: '20px' }}>
                                         <p className="ant-upload-drag-icon">
                                             <InboxOutlined />
                                         </p>
@@ -777,7 +853,7 @@ function EditHospital({ params }) {
                             <Col span={8}>
                                 <h1><span style={{ color: 'red' }}>*</span>Upload Cancelled Cheque*</h1>
                                 <Form.Item rules={[{ required: true, message: 'Please Upload The File' }]}>
-                                    <Dragger {...uploadProps('cancelled_cheque')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                    <Dragger {...uploadProps('cancelled_cheque', 'cancelled_cheque_url')} style={{ width: '100%', height: '80px', padding: '20px' }}>
                                         <p className="ant-upload-drag-icon">
                                             <InboxOutlined />
                                         </p>
@@ -791,7 +867,7 @@ function EditHospital({ params }) {
                             <Col span={8}>
                                 <h1>Gst Certificate</h1>
                                 <Form.Item>
-                                    <Dragger {...uploadProps('gst_certificate')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                    <Dragger {...uploadProps('gst_certificate', 'gst_certificate_url')} style={{ width: '100%', height: '80px', padding: '20px' }}>
                                         <p className="ant-upload-drag-icon">
                                             <InboxOutlined />
                                         </p>
@@ -804,7 +880,7 @@ function EditHospital({ params }) {
                             <Col span={8}>
                                 <h1>Certificate of Incorporation</h1>
                                 <Form.Item>
-                                    <Dragger {...uploadProps('certificate_of_incorporation')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                    <Dragger {...uploadProps('certificate_of_incorporation', 'certificate_of_incorporation_url')} style={{ width: '100%', height: '80px', padding: '20px' }}>
                                         <p className="ant-upload-drag-icon">
                                             <InboxOutlined />
                                         </p>
@@ -817,12 +893,26 @@ function EditHospital({ params }) {
                             <Col span={8}>
                                 <h1>Rohini Certificate</h1>
                                 <Form.Item >
-                                    <Dragger {...uploadProps('rohini_certificate')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                    <Dragger {...uploadProps('rohini_certificate', 'rohini_certificate_url')} style={{ width: '100%', height: '80px', padding: '20px' }}>
                                         <p className="ant-upload-drag-icon">
                                             <InboxOutlined />
                                         </p>
                                         <p className="ant-upload-text">Click or drag file to this area to upload</p>
                                         <p className="ant-upload-hint">Please upload the Rohini Certificate</p>
+                                    </Dragger>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={16}>
+                            <Col span={8}>
+                                <h1>MOU</h1>
+                                <Form.Item>
+                                    <Dragger {...uploadProps('mou', 'mou_url')} style={{ width: '100%', height: '80px', padding: '20px' }}>
+                                        <p className="ant-upload-drag-icon">
+                                            <InboxOutlined />
+                                        </p>
+                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                        <p className="ant-upload-hint">Please upload the MOU</p>
                                     </Dragger>
                                 </Form.Item>
                             </Col>
